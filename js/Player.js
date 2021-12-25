@@ -35,10 +35,18 @@ class Player {
     });
   }
 
+  update() {
+    var playerIndex = "players/player" + this.index;
+    database.ref(playerIndex).update({
+      positionX: this.positionX,
+      positionY: this.positionY
+    });
+  }
+
   static getPlayersInfo() {
-    var playerInfo=database.ref("players");
-    playerInfo.on("value", data=> {
-      allPlayers=data.val();
+    var playerInfoRef = database.ref("players");
+    playerInfoRef.on("value", data => {
+      allPlayers = data.val();
     });
   }
 }
