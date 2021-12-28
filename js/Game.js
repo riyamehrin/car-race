@@ -37,6 +37,51 @@ class Game {
     car2.scale = 0.07;
 
     cars = [car1, car2];
+
+    fuels = new Group();
+    powerCoins = new Group();
+    obstacles= new Group()
+    var obstaclesPositions = [
+      { x: width / 2 + 250, y: height - 800, image: obstacle2Image },
+      { x: width / 2 - 150, y: height - 1300, image: obstacle1Image },
+      { x: width / 2 + 250, y: height - 1800, image: obstacle1Image },
+      { x: width / 2 - 180, y: height - 2300, image: obstacle2Image },
+      { x: width / 2, y: height - 2800, image: obstacle2Image },
+      { x: width / 2 - 180, y: height - 3300, image: obstacle1Image },
+      { x: width / 2 + 180, y: height - 3300, image: obstacle2Image },
+      { x: width / 2 + 250, y: height - 3800, image: obstacle2Image },
+      { x: width / 2 - 150, y: height - 4300, image: obstacle1Image },
+      { x: width / 2 + 250, y: height - 4800, image: obstacle2Image },
+      { x: width / 2, y: height - 5300, image: obstacle1Image },
+      { x: width / 2 - 180, y: height - 5500, image: obstacle2Image }
+    ];
+
+    // Adding fuel sprite in the game
+    this.addSprites(fuels, 4, fuelImage, 0.02);
+
+    // Adding coin sprite in the game
+    this.addSprites(powerCoins, 18, powerCoinImage, 0.09);
+    this.addSprites(obstacles,obstaclesPositions.length,obstacle1Image,0.04,obstaclesPositions);
+  }
+
+  addSprites(spriteGroup, numberOfSprites, spriteImage, scale,positions=[]) {
+    for (var i = 0; i < numberOfSprites; i++) {
+      var x, y;
+      if(positions.length>0){
+        x=positions[i].x;
+        y=positions[i].y;
+        spriteImage=positions[i].image
+      }else{
+        x = random(width / 2 + 150, width / 2 - 150);
+        y = random(-height * 4.5, height - 400);
+      }
+
+      var sprite = createSprite(x, y);
+      sprite.addImage("sprite", spriteImage);
+
+      sprite.scale = scale;
+      spriteGroup.add(sprite);
+    }
   }
 
   handleElements() {
@@ -91,7 +136,9 @@ class Game {
           stroke(10);
           fill("red");
           ellipse(x, y, 60, 60);
-
+          this.handleFuel(index);
+          this.handlePowerCoin(index);
+          this.handleObstacles(index);
           // Changing camera position in y direction
           camera.position.y = cars[index - 1].position.y;
         }
@@ -99,22 +146,20 @@ class Game {
 
       // handling keyboard events
       this.handlePlayerControls();
-      const finishLine =height*6-100;
-      if (player.positionY>finishLine){
-        player.rank+=1;
-        player.update()
-      }
+
       drawSprites();
     }
   }
 
   handleResetButton() {
-    this.resetButton.mousePressed(()=>{
-      database.ref('/').set({
-        playerCount:0,gameState:0,players:{}
-      })
-      window.location.reload()
-    })
+    this.resetButton.mousePressed(() => {
+      database.ref("/").set({
+        playerCount: 0,
+        gameState: 0,
+        players: {}
+      });
+      window.location.reload();
+    });
   }
 
   showLeaderboard() {
@@ -165,13 +210,37 @@ class Game {
       player.positionY += 10;
       player.update();
     }
-    if (keyIsDown(LEFT_ARROW)  && player.positionX>width/3-50) {
+
+    if (keyIsDown(LEFT_ARROW) && player.positionX > width / 3 - 50) {
       player.positionX -= 5;
       player.update();
     }
-    if (keyIsDown(RIGHT_ARROW)  && player.positionX>width/2+300) {
+
+    if (keyIsDown(RIGHT_ARROW) && player.positionX < width / 2 + 300) {
       player.positionX += 5;
       player.update();
     }
   }
+  handlePowerCoin(index){
+    cars[index-1].overlap(powerCoins,function(collector,collected){
+      player.score+=21;
+      player.update();
+      collected.remove()
+    })
+  }
+  handleFuel(index){
+    cars[index-1].overlap(fuels,function(collector,collected){
+      player.fuel=185;
+      player.update();
+      collected.remove()
+    })
+  }
+  handleObstacles(index){
+    cars[index-1].overlap(obstacles,function(collector,collected){
+      player.life--;
+      player.update();
+      collected.remove()
+    })
+  }
 }
+
