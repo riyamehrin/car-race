@@ -6,8 +6,8 @@ class Player {
     this.positionY = 0;
     this.rank = 0;
     this.fuel = 185;
+    this.life = 185;
     this.score = 0;
-    this.life=3;
   }
 
   addPlayer() {
@@ -24,9 +24,7 @@ class Player {
       positionX: this.positionX,
       positionY: this.positionY,
       rank: this.rank,
-      score: this.score,
-      fuel:this.fuel,
-      life:this.life
+      score: this.score
     });
   }
 
@@ -58,7 +56,9 @@ class Player {
       positionX: this.positionX,
       positionY: this.positionY,
       rank: this.rank,
-      score: this.score
+      score: this.score,
+      life:this.life,
+      fuel:this.fuel
     });
   }
 
@@ -66,6 +66,18 @@ class Player {
     var playerInfoRef = database.ref("players");
     playerInfoRef.on("value", data => {
       allPlayers = data.val();
+    });
+  }
+
+  getCarsAtEnd() {
+    database.ref("carsAtEnd").on("value", data => {
+      this.rank = data.val();
+    });
+  }
+
+  static updateCarsAtEnd(rank) {
+    database.ref("/").update({
+      carsAtEnd: rank
     });
   }
 }
