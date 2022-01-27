@@ -7,7 +7,9 @@ class Game {
 
     this.leader1 = createElement("h2");
     this.leader2 = createElement("h2");
-    this.playerMoving = false ;
+    this.playerMoving = false;
+    this.leftKeyActive = false;
+    this.blast = false;
   }
 
   getState() {
@@ -32,11 +34,11 @@ class Game {
     car1 = createSprite(width / 2 - 50, height - 100);
     car1.addImage("car1", car1_img);
     car1.scale = 0.07;
-
+    car1.addImage("blast",blastImage);
     car2 = createSprite(width / 2 + 100, height - 100);
     car2.addImage("car2", car2_img);
     car2.scale = 0.07;
-
+    car2.addImage("blast",blastImage);
     cars = [car1, car2];
 
     fuels = new Group();
@@ -144,6 +146,12 @@ class Game {
         var x = allPlayers[plr].positionX;
         var y = height - allPlayers[plr].positionY;
 
+        var currlife=allPlayers[plr].life;
+        if(currlife<=0){
+          cars[index-1].changeImage("blast");
+          cars[index-1].scale=0.3;
+        }
+
         cars[index - 1].position.x = x;
         cars[index - 1].position.y = y;
 
@@ -154,15 +162,25 @@ class Game {
 
           this.handleFuel(index);
           this.handlePowerCoins(index);
+          this.handleObstacleCollision(index);
+          this.handleCarCollistion(index);
+          if(player.life<=0){
+            this.blast=true;
+            this.playerMoving=false;
+            gameState=2;
+            this.gameOver();
+          }
 
           // Changing camera position in y direction
           camera.position.y = cars[index - 1].position.y;
         }
       }
-      if(this.playerMoving){
-        player.positionY+=5;
-        player.update()
+
+      if (this.playerMoving) {
+        player.positionY += 5;
+        player.update();
       }
+
       // handling keyboard events
       this.handlePlayerControls();
 
@@ -259,20 +277,25 @@ class Game {
   }
 
   handlePlayerControls() {
+    if(!this.blast){
+      
     if (keyIsDown(UP_ARROW)) {
-      this.playerMoving=true
+      this.playerMoving = true;
       player.positionY += 10;
       player.update();
     }
 
     if (keyIsDown(LEFT_ARROW) && player.positionX > width / 3 - 50) {
+      this.leftKeyActive = true;
       player.positionX -= 5;
       player.update();
     }
 
     if (keyIsDown(RIGHT_ARROW) && player.positionX < width / 2 + 300) {
+      this.leftKeyActive = false;
       player.positionX += 5;
       player.update();
+    }
     }
   }
 
@@ -284,12 +307,15 @@ class Game {
       //the event
       collected.remove();
     });
-    if(player.fuel>0 && this.playerMoving){
-      player.fuel-=0.3
+
+    // Reducing Player car fuel
+    if (player.fuel > 0 && this.playerMoving) {
+      player.fuel -= 0.3;
     }
-    if(player.fuel<=0){
-      gameState=2;
-      this.gameOver()
+
+    if (player.fuel <= 0) {
+      gameState = 2;
+      this.gameOver();
     }
   }
 
@@ -303,6 +329,52 @@ class Game {
     });
   }
 
+  handleObstacleCollision(index) {
+    if (cars[index - 1].collide(obstacles)) {
+      if (this.leftKeyActive) {
+        player.positionX += 100;
+      } else {
+        player.positionX -= 100;
+      }
+
+      //Reducing Player Life
+      if (player.life > 0) {
+        player.life -= 185 / 4;
+      }
+
+      player.update();
+    }
+  }
+handleCarCollistion(index){
+  if(index == 1){
+    if(cars[index-1].collide(cars[1])){
+      if(this.leftKeyActive){
+        player.positionX+=100
+      }else{
+        player.positionX-=100
+      }
+      if(player.life>0){
+        player.life-=185/4
+      }
+      player.update()
+    }
+
+  }
+  if(index == 2){
+    if(cars[index-1].collide(cars[0])){
+      if(this.leftKeyActive){
+        player.positionX+=100
+      }else{
+        player.positionX-=100
+      }
+      if(player.life>0){
+        player.life-=185/4
+      }
+      player.update()
+    }
+
+  }
+}
   showRank() {
     swal({
       title: `Awesome!${"\n"}Rank${"\n"}${player.rank}`,

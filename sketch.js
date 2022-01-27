@@ -17,6 +17,7 @@ function preload() {
   obstacle1Image = loadImage("./assets/obstacle1.png");
   obstacle2Image = loadImage("./assets/obstacle2.png");
   lifeImage = loadImage("./assets/life.png");
+  blastImage =loadImage("./assets/blast.png");
 }
 
 function setup() {
@@ -35,6 +36,11 @@ function draw() {
 
   if (gameState === 1) {
     game.play();
+  }
+
+  if (gameState === 2) {
+    game.showLeaderboard();
+    game.end();
   }
 }
 

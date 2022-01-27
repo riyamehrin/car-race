@@ -24,7 +24,8 @@ class Player {
       positionX: this.positionX,
       positionY: this.positionY,
       rank: this.rank,
-      score: this.score
+      score: this.score,
+      life:this.life
     });
   }
 
@@ -57,8 +58,7 @@ class Player {
       positionY: this.positionY,
       rank: this.rank,
       score: this.score,
-      life:this.life,
-      fuel:this.fuel
+      life: this.life
     });
   }
 
